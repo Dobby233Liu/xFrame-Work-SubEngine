@@ -5,6 +5,7 @@
     license that can be found in the LICENSE file or at
     https://opensource.org/licenses/MIT.
 */
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -22,6 +23,10 @@ public class GameManager : ISingletonInterface<GameManager>
     [Tooltip("Toggles debug mode.")]
     public bool debugMode;
 
+    /* Lua file search paths https://github.com/lua/lua/blob/fc6c74f1004b5f67d0503633ddb74174a3c8d6ad/luaconf.h#L208 */
+    private string[] searchPaths = new string[] {"?.lua", "?/init.lua"};
+    private string initCode = "require('main')";
+
     // Start is called before the first frame update
     void Start()
     {
@@ -32,11 +37,16 @@ public class GameManager : ISingletonInterface<GameManager>
             luaenv = new LuaEnv();
             luaenv.AddLoader( LuaScripts );
 
-            Logger.Log( Channel.LuaNative, Priority.Info, "[xFM] LuaVM is Active" );
+            Logger.Log( Channel.LuaNative, Priority.Info, "[xFM] Lua has been initalized" );
 
-            luaenv.DoString( "require('main')" );
+            luaenv.DoString( initCode );
         }
-        else { Logger.Log( Channel.LuaNative, Priority.Info, "[xFM] LuaVM is de-active" ); }
+        else { Logger.Log( Channel.LuaNative, Priority.Info, "[xFM] Lua is disabled" ); }
+    }
+
+    private string GetDataPath()
+    {
+        return (Application.platform == RunnerPlatform.Android ? Application.persistentDataPath : Application.dataPath);
     }
 
     // The LUA folder is on the asset path + subfolders
@@ -44,34 +54,42 @@ public class GameManager : ISingletonInterface<GameManager>
     private List<string> folders;
     public byte[] LuaScripts( ref string fileName )
     {
- //#if UNITY_EDITOR
-        /* If we don't had any folder on our List, add them! */
+        /* Search for subfolders if we haven't */
         if ( folders == null )
         {
             folders = new List<string>();
-            string luaPath = Application.dataPath + "/Lua/";
+            string luaPath = Path.Combine(GetDataPath(), "Lua");
+            if (!Directory.Exists(luaPath))
+                throw Exception("Main Lua folder does not exist: " + luaPath);
             folders.Add( luaPath );
 
             /* Add all of our subfolders */
             string[] dirs = Directory.GetDirectories( luaPath );
             foreach ( var subfolder in dirs )
             {
-                folders.Add( subfolder + "/" );
+                folders.Add(subfolder);
             }
         }
 
-        /* Check if our subfolders has a .lua file */
-        string name = fileName + ".lua";
-        for ( var i = 0; i < folders.Count; i++ )
+        string moduleName = fileName;
+        if (Path.EndsInDirectorySeparator(moduleName)) // Very likely a folder
+            moduleName = Path.GetDirectoryName(moduleName);
+        else if (moduleName.EndsWith(".lua")) // I think this is okay, nobody names a folder a.lua
+            moduleName = Path.GetFileNameWithoutExtension(moduleName);
+
+        foreach (string subfolder in folders)
         {
-            if ( File.Exists( folders[i] + name ) )
+            foreach (string searchPath in searchPaths)
             {
-                return File.ReadAllBytes( folders[i] + name );
+                string filepath = Path.Combine(subfolder, searchPath.Replace("?", moduleName));
+                if (File.Exists(filepath))
+                {
+                    fileName = filepath
+                    return File.ReadAllBytes(filepath);
+                }
             }
         }
-//#else
 
-//#endif
         return null;
     }
 
