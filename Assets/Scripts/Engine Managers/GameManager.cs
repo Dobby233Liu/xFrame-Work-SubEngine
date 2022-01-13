@@ -60,7 +60,7 @@ public class GameManager : ISingletonInterface<GameManager>
             folders = new List<string>();
             string luaPath = Path.Combine(GetDataPath(), "Lua");
             if (!Directory.Exists(luaPath))
-                throw Exception("Main Lua folder does not exist: " + luaPath);
+                throw DirectoryNotFoundException("Main Lua folder does not exist: " + luaPath);
             folders.Add( luaPath );
 
             /* Add all of our subfolders */
