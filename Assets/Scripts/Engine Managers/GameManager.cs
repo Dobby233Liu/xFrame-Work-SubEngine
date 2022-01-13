@@ -48,7 +48,7 @@ public class GameManager : ISingletonInterface<GameManager>
 
     private string GetDataPath()
     {
-        return (Application.platform == RunnerPlatform.Android ? Application.persistentDataPath : Application.dataPath);
+        return (Application.platform == RuntimePlatform.Android ? Application.persistentDataPath : Application.dataPath);
     }
 
     // The LUA folder is on the asset path + subfolders
@@ -72,7 +72,7 @@ public class GameManager : ISingletonInterface<GameManager>
         /* Get module name from file name */
         string moduleName = fileName.Replace('.', '/');
         // VERIFY: This piece of code may be completely unneeded
-        if (moduleName.EndsWith(Path.DirectorySeperatorChar.ToString()) || moduleName.EndsWith(Path.AltDirectorySeperatorChar.ToString())) // Very likely a folder
+        if (moduleName.EndsWith("/") || moduleName.EndsWith("\\")) // Very likely a folder
             moduleName = Path.GetDirectoryName(moduleName);
         else if (moduleName.EndsWith(".lua")) // I think this is okay, nobody names a folder a.lua
             moduleName = Path.GetFileNameWithoutExtension(moduleName);
