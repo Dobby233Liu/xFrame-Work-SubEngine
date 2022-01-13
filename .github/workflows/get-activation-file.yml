@@ -1,6 +1,6 @@
 name: bob
 on:
-  workflow_dispatch:
+  push:
 jobs:
   activation:
     name: Request manual activation file
