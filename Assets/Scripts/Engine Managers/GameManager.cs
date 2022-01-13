@@ -5,12 +5,15 @@
     license that can be found in the LICENSE file or at
     https://opensource.org/licenses/MIT.
 */
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using XLua;
+
+using UnityEngine.SceneManagement;
 
 public class GameManager : ISingletonInterface<GameManager>
 {
@@ -119,6 +122,10 @@ public class GameManager : ISingletonInterface<GameManager>
     {
         if ( luaenv != null )
             luaenv.Tick();
+
+        // Workaround to #1
+        if (Input.GetKeyDown(KeyCode.X))
+            SceneManager.LoadScene("MainWorld");
     }
 
     // OnDestroy occurs when a Scene or game ends.
