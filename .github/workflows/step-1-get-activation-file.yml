@@ -1,4 +1,4 @@
-name: Step 1: Acquire activation file
+name: "Step 1: Acquire activation file"
 on: [workflow_dispatch]
 jobs:
   activation:
