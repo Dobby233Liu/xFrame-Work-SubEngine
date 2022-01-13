@@ -73,6 +73,8 @@ public class GameManager : ISingletonInterface<GameManager>
             moduleName = Path.GetDirectoryName(moduleName);
         else if (moduleName.EndsWith(".lua")) // I think this is okay, nobody names a folder a.lua
             moduleName = Path.GetFileNameWithoutExtension(moduleName);
+        if (string.IsNullOrEmpty(moduleName))
+            throw Exception("moduleName is null or empty, that doesn't seem right. Is a correct filename parameter passed? (" + filename + ")");
 
         /* Search for the script in all subfolders (but why???) */
         foreach (string subfolder in folders)
