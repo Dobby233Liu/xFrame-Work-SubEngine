@@ -1,7 +1,8 @@
-name: Build for Android
+name: Build project
+on: [push]
 jobs:
   build:
-    name: Build for Android
+    name: Build for ${{env.TARGET_PLATFORM}}
     runs-on: ubuntu-latest
     env:
       TARGET_PLATFORM: Android
