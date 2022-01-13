@@ -25,7 +25,7 @@ public class GameManager : ISingletonInterface<GameManager>
 
     /* Lua file search paths https://github.com/lua/lua/blob/fc6c74f1004b5f67d0503633ddb74174a3c8d6ad/luaconf.h#L208 */
     private string[] searchPaths = new string[] {"?.lua", "?/init.lua"};
-    private string initCode = "require('main')";
+    private string initCode = "require 'main'";
 
     // Start is called before the first frame update
     void Start()
@@ -64,19 +64,17 @@ public class GameManager : ISingletonInterface<GameManager>
             folders.Add( luaPath );
 
             /* Add all of our subfolders */
-            string[] dirs = Directory.GetDirectories( luaPath );
-            foreach ( var subfolder in dirs )
-            {
-                folders.Add(subfolder);
-            }
+            folders.AddRange(Directory.GetDirectories(luaPath));
         }
 
-        string moduleName = fileName;
+        /* Get module name from file name */
+        string moduleName = fileName.Replace('.', '/');
         if (Path.EndsInDirectorySeparator(moduleName)) // Very likely a folder
             moduleName = Path.GetDirectoryName(moduleName);
         else if (moduleName.EndsWith(".lua")) // I think this is okay, nobody names a folder a.lua
             moduleName = Path.GetFileNameWithoutExtension(moduleName);
 
+        /* Search for the script in all subfolders (but why???) */
         foreach (string subfolder in folders)
         {
             foreach (string searchPath in searchPaths)
@@ -84,8 +82,15 @@ public class GameManager : ISingletonInterface<GameManager>
                 string filepath = Path.Combine(subfolder, searchPath.Replace("?", moduleName));
                 if (File.Exists(filepath))
                 {
-                    fileName = filepath
-                    return File.ReadAllBytes(filepath);
+                    try {
+                        byte[] moduledata = File.ReadAllBytes(filepath);
+                        // For debugging
+                        fileName = filepath
+                        return moduledata
+                    } catch {
+                        // File can't be read
+                        continue;
+                    }
                 }
             }
         }
