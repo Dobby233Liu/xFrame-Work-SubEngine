@@ -26,10 +26,12 @@ public class GameManager : ISingletonInterface<GameManager>
     /* Lua file search paths https://github.com/lua/lua/blob/fc6c74f1004b5f67d0503633ddb74174a3c8d6ad/luaconf.h#L208 */
     private string[] searchPaths = new string[] {"?.lua", "?/init.lua"};
     private string initCode = "require 'main'";
+    private string dataPath = "";
 
     // Start is called before the first frame update
     void Start()
     {
+        dataPath = GetDataPath();
         /* Execute our main.lua file */
         if ( luaEnable )
         {
@@ -58,9 +60,9 @@ public class GameManager : ISingletonInterface<GameManager>
         if ( folders == null )
         {
             folders = new List<string>();
-            string luaPath = Path.Combine(GetDataPath(), "Lua");
+            string luaPath = Path.Combine(dataPath, "Lua");
             if (!Directory.Exists(luaPath))
-                throw DirectoryNotFoundException("Main Lua folder does not exist: " + luaPath);
+                throw new DirectoryNotFoundException("Main Lua folder does not exist: " + luaPath);
             folders.Add( luaPath );
 
             /* Add all of our subfolders */
@@ -70,12 +72,12 @@ public class GameManager : ISingletonInterface<GameManager>
         /* Get module name from file name */
         string moduleName = fileName.Replace('.', '/');
         // VERIFY: This piece of code may be completely unneeded
-        if (Path.EndsInDirectorySeparator(moduleName)) // Very likely a folder
+        if (moduleName.EndsWith(Path.DirectorySeperatorChar.ToString()) || moduleName.EndsWith(Path.AltDirectorySeperatorChar.ToString())) // Very likely a folder
             moduleName = Path.GetDirectoryName(moduleName);
         else if (moduleName.EndsWith(".lua")) // I think this is okay, nobody names a folder a.lua
             moduleName = Path.GetFileNameWithoutExtension(moduleName);
         if (string.IsNullOrEmpty(moduleName))
-            throw Exception("The moduleName I got from the filename is null or empty, that doesn't seem right. Is a vaild filename parameter passed? (" + filename + ")");
+            throw new Exception("The moduleName I got from the filename is null or empty, that doesn't seem right. Is a vaild filename parameter passed? (" + fileName + ")");
 
         /* Search for the script in all subfolders (but why???) */
         foreach (string subfolder in folders)
@@ -120,7 +122,7 @@ public class GameManager : ISingletonInterface<GameManager>
     }
 
     // OnDestroy occurs when a Scene or game ends.
-    public virtual void OnDestroy()
+    public virtual override void OnDestroy()
     {
         if ( luaenv != null )
             luaenv.Dispose();
