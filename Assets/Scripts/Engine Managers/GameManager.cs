@@ -122,7 +122,7 @@ public class GameManager : ISingletonInterface<GameManager>
     }
 
     // OnDestroy occurs when a Scene or game ends.
-    public virtual override void OnDestroy()
+    public override void OnDestroy()
     {
         if ( luaenv != null )
             luaenv.Dispose();
