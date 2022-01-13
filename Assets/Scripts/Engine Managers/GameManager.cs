@@ -69,6 +69,7 @@ public class GameManager : ISingletonInterface<GameManager>
 
         /* Get module name from file name */
         string moduleName = fileName.Replace('.', '/');
+        // VERIFY: This piece of code may be completely unneeded
         if (Path.EndsInDirectorySeparator(moduleName)) // Very likely a folder
             moduleName = Path.GetDirectoryName(moduleName);
         else if (moduleName.EndsWith(".lua")) // I think this is okay, nobody names a folder a.lua
@@ -87,9 +88,11 @@ public class GameManager : ISingletonInterface<GameManager>
                     try {
                         byte[] moduledata = File.ReadAllBytes(filepath);
                         // For debugging
-                        fileName = filepath
-                        return moduledata
-                    } catch {
+                        fileName = filepath;
+                        return moduledata;
+                    } catch (PathTooLongException e) {
+                        throw;
+                    } catch (IOException e) {
                         // File can't be read
                         continue;
                     }
